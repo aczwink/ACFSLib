@@ -16,13 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <ACFSLib.hpp>
+#include <Std++.hpp>
+using namespace StdXX;
 
-#include "coh_sga/COH_SGA_Format.hpp"
-#include "scct_umd/SCCT_UMD_Format.hpp"
-
-void RegisterACFSFileSystemFormats()
+class COH_SGA_Format : public FileSystemFormat
 {
-	FileSystemFormat::Register(new COH_SGA_Format);
-	FileSystemFormat::Register(new SCCT_UMD_Format);
-}
+public:
+	//Methods
+	FileSystem * CreateFileSystem(const Path & fileSystemPath) const override;
+	String GetId() const override;
+	String GetName() const override;
+	float32 Matches(SeekableInputStream & inputStream) const override;
+};

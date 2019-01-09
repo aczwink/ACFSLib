@@ -16,13 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <ACFSLib.hpp>
+#include <Std++.hpp>
+using namespace StdXX;
 
-#include "coh_sga/COH_SGA_Format.hpp"
-#include "scct_umd/SCCT_UMD_Format.hpp"
-
-void RegisterACFSFileSystemFormats()
+class COH_SGA_FileSystem : public ContainerFileSystem
 {
-	FileSystemFormat::Register(new COH_SGA_Format);
-	FileSystemFormat::Register(new SCCT_UMD_Format);
-}
+public:
+	//Constructor
+	inline COH_SGA_FileSystem(const FileSystemFormat *format, const Path &fileSystemPath) : ContainerFileSystem(format, fileSystemPath)
+	{
+		if (!this->containerInputStream.IsNull())
+			this->ReadFileHeaders();
+	}
+
+	//Methods
+	void Flush() override;
+
+private:
+	//Methods
+	void ReadFileHeaders();
+};

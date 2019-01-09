@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <Std++.hpp>
 
 /*
 Descriptions:
@@ -51,7 +52,7 @@ File Layout:
 
 struct UMDFileHeader
 {
-	String fileName;
+	StdXX::String fileName;
 	uint32 dataOffset;
 	uint32 fileSize;
 };

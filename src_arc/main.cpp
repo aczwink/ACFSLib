@@ -18,11 +18,11 @@
  */
 #include <Std++.hpp>
 #include <ACFSLib.hpp>
-using namespace StdPlusPlus;
+using namespace StdXX;
 
 void Extract(AutoPointer<Directory> dir, const Path &outputPath)
 {
-	FileSystem::GetOSFileSystem().CreateDirectoryTree(outputPath);
+	OSFileSystem::GetInstance().CreateDirectoryTree(outputPath);
 	/*
 	 * if(!currentPath.GetParent().CreateDirectoryTree())
 		{
@@ -40,7 +40,7 @@ void Extract(AutoPointer<Directory> dir, const Path &outputPath)
 		}
 		else
 		{
-			stdOut << u8"Currently extracting " << dir->GetPath() / child->GetName() << u8" (" << String::FormatByteSize(child->GetSize()) << u8")" << endl;
+			stdOut << u8"Currently extracting " << dir->GetPath() / child->GetName() << u8" (" << String::FormatBinaryPrefixed(child->GetSize()) << u8")" << endl;
 			UniquePointer<InputStream> input = child.Cast<File>()->OpenForReading();
 			/*
 			 * if(!currentFile.Open(output + '\\' + CString(data.fileHeaders.pFileHeaders[i].pFileName)))
@@ -67,7 +67,9 @@ void PrintManual()
 		<< endl
 		<< u8"   command:"
 		<< endl
-		<< u8"     extract     extract archive"
+		<< u8"     e     extract archive"
+		<< endl
+		<< u8"     o     open archive"
 		<< endl
 		<< endl;
 }
@@ -84,7 +86,7 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 	}
 
 	//load file system
-	Path inputPath = args[0];
+	Path inputPath = OSFileSystem::GetInstance().FromNativePath(args[0]);
 	UniquePointer<FileSystem> fileSystem;
 
 	//execute commands
@@ -125,7 +127,7 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 				return EXIT_FAILURE;
 			}
 
-			Path outputPath = inputPath.GetAbsolutePath().GetParent() / inputPath.GetTitle();
+			Path outputPath = OSFileSystem::GetInstance().ToAbsolutePath(inputPath).GetParent() / inputPath.GetTitle();
 			Extract(fileSystem->GetRoot(), outputPath);
 		}
 		else if(args[i] == u8"o")
@@ -146,7 +148,7 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 			}
 
 			stdOut << u8"Found file system: " << fileSystem->GetFormat()->GetName() << endl;
-			stdOut << u8"File system size: " << String::FormatByteSize(fileSystem->GetSize()) << endl;
+			stdOut << u8"File system size: " << String::FormatBinaryPrefixed(fileSystem->GetSize()) << endl;
 		}
 		else
 		{

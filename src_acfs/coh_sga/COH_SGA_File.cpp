@@ -16,13 +16,3 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <ACFSLib.hpp>
-
-#include "coh_sga/COH_SGA_Format.hpp"
-#include "scct_umd/SCCT_UMD_Format.hpp"
-
-void RegisterACFSFileSystemFormats()
-{
-	FileSystemFormat::Register(new COH_SGA_Format);
-	FileSystemFormat::Register(new SCCT_UMD_Format);
-}

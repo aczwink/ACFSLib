@@ -16,13 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <ACFSLib.hpp>
+#define SGA_SIGNATURE "_ARCHIVE"
+const uint8 SGA_SIGNATURE_LENGTH = 8;
 
-#include "coh_sga/COH_SGA_Format.hpp"
-#include "scct_umd/SCCT_UMD_Format.hpp"
-
-void RegisterACFSFileSystemFormats()
+struct DirEntry
 {
-	FileSystemFormat::Register(new COH_SGA_Format);
-	FileSystemFormat::Register(new SCCT_UMD_Format);
-}
+	uint32 nameOffset;
+	uint16 subdirsStart;
+	uint16 subdirsEnd;
+	uint16 filesStart;
+	uint16 filesEnd;
+};

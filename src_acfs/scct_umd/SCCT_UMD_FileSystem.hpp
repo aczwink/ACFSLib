@@ -17,7 +17,7 @@
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <Std++.hpp>
-using namespace StdPlusPlus;
+using namespace StdXX;
 
 class SCCT_UMD_FileSystem : public ContainerFileSystem
 {
@@ -81,7 +81,8 @@ public:
 
 				totalSize += this->WriteCompressedInt(nameLength, *tempFile);
 				nameBuffer.FlushTo(*tempFile);
-				tempFile->WriteByte(0);
+				byte b = 0;
+				tempFile->WriteBytes(&b, 1);
 
 				dataWriter << fh.dataOffset << fh.fileSize;
 				dataWriter.WriteUInt32(0);
@@ -113,7 +114,7 @@ private:
 		inputStream.ReadBytes(&b, 1);
 		if(b & 0x80) //value is negative
 		{
-			NOT_IMPLEMENTED_ERROR
+			NOT_IMPLEMENTED_ERROR;
 		}
 		if(!(b & 0x40)) //no byte follows
 			return b & 0x3F;
@@ -130,7 +131,7 @@ private:
 
 		if(b & 0x80)
 		{
-			NOT_IMPLEMENTED_ERROR
+			NOT_IMPLEMENTED_ERROR;
 		}
 
 		return result;

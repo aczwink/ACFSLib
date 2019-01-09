@@ -1,25 +1,20 @@
 cmake_minimum_required(VERSION 3.6)
 project(ACFSLib)
+find_package(XP-CMake REQUIRED) #we need advanced cmake modules
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
-#debug or release
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-	add_definitions(-D_DEBUG)
-else()
-    message(FATAL_ERROR "Unknown build type. Must be either 'Debug' or 'Release'")
-endif()
+XPC_AutoBuildType()
+XPC_OptForHost()
+XPC_SetCompileDefinitions()
 
-find_library(STDPLUSPLUS_LIBRARY NAMES Std++_d REQUIRED)
-find_library(STDPLUSPLUSSTATIC_LIBRARY NAMES Std++Static_d REQUIRED)
+find_package(StdPlusPlus REQUIRED)
 
-set(LIBS ${STDPLUSPLUS_LIBRARY} ${STDPLUSPLUSSTATIC_LIBRARY})
-
-add_library(acfs include/ACFSLib.hpp src_acfs/ACFSLib.cpp src_acfs/scct_umd/SCCT_UMD_Format.hpp src_acfs/scct_umd/UMD.hpp src_acfs/scct_umd/SCCT_UMD_FileSystem.hpp)
+add_subdirectory(src_acfs)
+add_library(acfs include/ACFSLib.hpp ${SOURCE_FILES})
 target_include_directories(acfs PRIVATE include)
-target_link_libraries(acfs ${LIBS})
+target_link_libraries(acfs PRIVATE Std++)
 
 add_executable(ArC src_arc/main.cpp)
 target_include_directories(ArC PRIVATE include)
-target_link_libraries(ArC ${LIBS})
-target_link_libraries(ArC acfs)
+target_link_libraries(ArC Std++ Std++Static acfs)
