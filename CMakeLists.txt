@@ -18,3 +18,6 @@ target_link_libraries(acfs PRIVATE Std++)
 add_executable(ArC src_arc/main.cpp)
 target_include_directories(ArC PRIVATE include)
 target_link_libraries(ArC Std++ Std++Static acfs)
+
+add_executable(gArC src_garc/main.cpp)
+target_link_libraries(gArC Std++ Std++Static)

@@ -20,7 +20,7 @@
 #include <ACFSLib.hpp>
 using namespace StdXX;
 
-void Extract(AutoPointer<Directory> dir, const Path &outputPath)
+void Extract(AutoPointer<const Directory> dir, const Path &outputPath)
 {
 	OSFileSystem::GetInstance().CreateDirectoryTree(outputPath);
 	/*
@@ -31,17 +31,18 @@ void Extract(AutoPointer<Directory> dir, const Path &outputPath)
 		}
 	 */
 
-	for(auto child : *dir)
+	for(const auto &childName : *dir)
 	{
-		Path currentPath = outputPath / Path(child->GetName());
-		if(child.IsInstanceOf<Directory>())
+		Path currentPath = outputPath / childName;
+		auto child = dir->GetChild(childName);
+		if(child.IsInstanceOf<const Directory>())
 		{
-			Extract(child.Cast<Directory>(), currentPath);
+			Extract(child.Cast<const Directory>(), currentPath);
 		}
 		else
 		{
-			stdOut << u8"Currently extracting " << dir->GetPath() / child->GetName() << u8" (" << String::FormatBinaryPrefixed(child->GetSize()) << u8")" << endl;
-			UniquePointer<InputStream> input = child.Cast<File>()->OpenForReading();
+			stdOut << u8"Currently extracting " << dir->GetPath() / childName << u8" (" << String::FormatBinaryPrefixed(child->GetSize()) << u8")" << endl;
+			UniquePointer<InputStream> input = child.Cast<const File>()->OpenForReading();
 			/*
 			 * if(!currentFile.Open(output + '\\' + CString(data.fileHeaders.pFileHeaders[i].pFileName)))
 		{

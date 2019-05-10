@@ -53,10 +53,12 @@ public:
 
 			//write file data first
 			uint32 offset = 0;
-			for(auto file : this->root->WalkFiles())
+			for(const auto& filePath : this->root->WalkFiles())
 			{
+				auto file = this->GetFile(filePath);
+
 				FileHeader fh;
-				fh.filePath = file->GetPath();
+				fh.filePath = filePath;
 				fh.dataOffset = offset;
 				fh.fileSize = static_cast<uint32>(file->GetSize());
 				offset += fh.fileSize;
@@ -163,7 +165,10 @@ private:
 			uint32 fileSize = dataReader.ReadUInt32();
 			bufferedInputStream.Skip(4); //padding
 
-			this->AddSourceFile(Path(fileName), dataOffset, fileSize); //add file
+			ContainerFileHeader header;
+			header.offset = dataOffset;
+			header.uncompressedSize = fileSize;
+			this->AddSourceFile(Path(fileName), header); //add file
 		}
 	}
 
