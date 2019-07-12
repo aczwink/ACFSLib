@@ -64,7 +64,7 @@ public:
 				offset += fh.fileSize;
 				fileHeaders.InsertTail(fh);
 
-				file->OpenForReading()->FlushTo(*tempFile);
+				file->OpenForReading(false)->FlushTo(*tempFile);
 			}
 
 			const uint32 fileHeadersOffset = offset;

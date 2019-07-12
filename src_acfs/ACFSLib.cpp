@@ -19,10 +19,12 @@
 #include <ACFSLib.hpp>
 
 #include "coh_sga/COH_SGA_Format.hpp"
+#include "g3_pak/Gothic3_PAK_Format.hpp"
 #include "scct_umd/SCCT_UMD_Format.hpp"
 
 void RegisterACFSFileSystemFormats()
 {
 	FileSystemFormat::Register(new COH_SGA_Format);
+	FileSystemFormat::Register(new G3_PAK_Format);
 	FileSystemFormat::Register(new SCCT_UMD_Format);
 }

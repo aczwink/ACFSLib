@@ -42,7 +42,7 @@ void Extract(AutoPointer<const Directory> dir, const Path &outputPath)
 		else
 		{
 			stdOut << u8"Currently extracting " << dir->GetPath() / childName << u8" (" << String::FormatBinaryPrefixed(child->GetSize()) << u8")" << endl;
-			UniquePointer<InputStream> input = child.Cast<const File>()->OpenForReading();
+			UniquePointer<InputStream> input = child.Cast<const File>()->OpenForReading(true);
 			/*
 			 * if(!currentFile.Open(output + '\\' + CString(data.fileHeaders.pFileHeaders[i].pFileName)))
 		{

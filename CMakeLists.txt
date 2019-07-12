@@ -21,3 +21,7 @@ target_link_libraries(ArC Std++ Std++Static acfs)
 
 add_executable(gArC src_garc/main.cpp)
 target_link_libraries(gArC Std++ Std++Static)
+
+add_executable(test_manual src_tests/manual.cpp)
+target_include_directories(test_manual PRIVATE include)
+target_link_libraries(test_manual Std++ Std++Static acfs)

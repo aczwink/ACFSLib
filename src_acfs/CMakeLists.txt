@@ -9,6 +9,10 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.hpp
 
+	#g3_pak
+	${CMAKE_CURRENT_SOURCE_DIR}/g3_pak/Gothic3_PAK_FileSystem.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/g3_pak/Gothic3_PAK_Format.hpp
+
 	#scct_umd
 	${CMAKE_CURRENT_SOURCE_DIR}/scct_umd/SCCT_UMD_FileSystem.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/scct_umd/SCCT_UMD_Format.hpp
