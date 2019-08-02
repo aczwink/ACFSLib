@@ -9,6 +9,10 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.hpp
 
+	#g2_vdfs
+	${CMAKE_CURRENT_SOURCE_DIR}/g2_vdfs/Gothic2_VDFS_FileSystem.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/g2_vdfs/Gothic2_VDFS_Format.hpp
+
 	#g3_pak
 	${CMAKE_CURRENT_SOURCE_DIR}/g3_pak/Gothic3_PAK_FileSystem.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/g3_pak/Gothic3_PAK_Format.hpp

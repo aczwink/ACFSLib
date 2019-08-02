@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -19,12 +19,14 @@
 #include <ACFSLib.hpp>
 
 #include "coh_sga/COH_SGA_Format.hpp"
+#include "g2_vdfs/Gothic2_VDFS_Format.hpp"
 #include "g3_pak/Gothic3_PAK_Format.hpp"
 #include "scct_umd/SCCT_UMD_Format.hpp"
 
 void RegisterACFSFileSystemFormats()
 {
 	FileSystemFormat::Register(new COH_SGA_Format);
+	FileSystemFormat::Register(new G2_VDFS_Format);
 	FileSystemFormat::Register(new G3_PAK_Format);
 	FileSystemFormat::Register(new SCCT_UMD_Format);
 }
