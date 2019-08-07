@@ -9,6 +9,10 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.hpp
 
+	#ea_big
+	${CMAKE_CURRENT_SOURCE_DIR}/ea_big/EA_BIG_FileSystem.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/ea_big/EA_BIG_Format.hpp
+
 	#g2_vdfs
 	${CMAKE_CURRENT_SOURCE_DIR}/g2_vdfs/Gothic2_VDFS_FileSystem.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/g2_vdfs/Gothic2_VDFS_Format.hpp

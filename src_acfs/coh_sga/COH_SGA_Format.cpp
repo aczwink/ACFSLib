@@ -44,8 +44,15 @@ float32 COH_SGA_Format::Matches(SeekableInputStream & inputStream) const
 	DataReader reader(false, inputStream);
 	TextReader textReader(inputStream, TextCodecType::ASCII);
 
-	if (textReader.ReadString(SGA_SIGNATURE_LENGTH) != SGA_SIGNATURE)
+	try
+	{
+		if (textReader.ReadString(SGA_SIGNATURE_LENGTH) != SGA_SIGNATURE)
+			return 0;
+	}
+	catch(const ErrorHandling::IllegalEncodedCharException& e)
+	{
 		return 0;
+	}
 
 	uint32 version = reader.ReadUInt32();
 	switch (version)
