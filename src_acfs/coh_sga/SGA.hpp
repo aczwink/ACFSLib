@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define SGA_SIGNATURE "_ARCHIVE"
+#define SGA_SIGNATURE u8"_ARCHIVE"
 const uint8 SGA_SIGNATURE_LENGTH = 8;
 
 struct DirEntry

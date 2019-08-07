@@ -2,9 +2,7 @@ set(SOURCE_FILES
 	${SOURCE_FILES}
 
 	#coh_sga
-	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_File.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_File.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_FileSystem.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_FileSystem.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_FileSystem.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/coh_sga/COH_SGA_Format.hpp

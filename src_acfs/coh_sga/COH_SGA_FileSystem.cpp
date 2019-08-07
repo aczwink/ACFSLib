@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -19,7 +19,6 @@
 //Class header
 #include "COH_SGA_FileSystem.hpp"
 //Local
-#include "COH_SGA_File.hpp"
 #include "SGA.hpp"
 
 struct FileEntry
@@ -140,7 +139,7 @@ void COH_SGA_FileSystem::ReadFileHeaders()
 
 			ContainerFileHeader header;
 			ASSERT(fileEntry.flags == 0x100, u8"unknown flagss"); //compression method, 0x100 = zlib
-			header.compression = CompressionAlgorithm::DEFLATE;
+			header.compression = CompressionAlgorithm::ZLIB;
 			header.offset = dataOffset + fileEntry.dataOffset;
 			header.uncompressedSize = fileEntry.uncompressedSize;
 			header.compressedSize = fileEntry.compressedSize;
