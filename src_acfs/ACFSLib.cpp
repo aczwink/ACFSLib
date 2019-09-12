@@ -18,16 +18,20 @@
  */
 #include <ACFSLib.hpp>
 
+#include "bis_pbo/BIS_PBO_Format.hpp"
 #include "coh_sga/COH_SGA_Format.hpp"
 #include "ea_big/EA_BIG_Format.hpp"
+#include "edmw_ssa/EDMW_SSA_Format.hpp"
 #include "g2_vdfs/Gothic2_VDFS_Format.hpp"
 #include "g3_pak/Gothic3_PAK_Format.hpp"
 #include "scct_umd/SCCT_UMD_Format.hpp"
 
 void RegisterACFSFileSystemFormats()
 {
+	FileSystemFormat::Register(new BIS_PBO_Format);
 	FileSystemFormat::Register(new COH_SGA_Format);
 	FileSystemFormat::Register(new EA_BIG_Format);
+	FileSystemFormat::Register(new EDMW_SSA_Format);
 	FileSystemFormat::Register(new G2_VDFS_Format);
 	FileSystemFormat::Register(new G3_PAK_Format);
 	FileSystemFormat::Register(new SCCT_UMD_Format);
