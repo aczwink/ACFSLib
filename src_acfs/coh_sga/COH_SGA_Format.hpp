@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -27,4 +27,5 @@ public:
 	String GetId() const override;
 	String GetName() const override;
 	float32 Matches(SeekableInputStream & inputStream) const override;
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override;
 };

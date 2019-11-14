@@ -24,9 +24,9 @@ using namespace StdXX;
 class G3_PAK_Format : public FileSystemFormat
 {
 public:
-	FileSystem *CreateFileSystem(const Path &fileSystemPath) const override
+	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
-		return new G3_PAK_FileSystem(this, fileSystemPath);
+		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 	}
 
 	String GetId() const override
@@ -47,5 +47,10 @@ public:
 		if(dataReader.ReadUInt32() != FOURCC(u8"G3V0"))
 			return 0;
 		return 1;
+	}
+
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	{
+		return new G3_PAK_FileSystem(this, fileSystemPath);
 	}
 };

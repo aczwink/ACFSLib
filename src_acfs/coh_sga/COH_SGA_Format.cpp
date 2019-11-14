@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -23,9 +23,9 @@
 #include "SGA.hpp"
 
 //Public methods
-FileSystem * COH_SGA_Format::CreateFileSystem(const Path & fileSystemPath) const
+FileSystem *COH_SGA_Format::CreateFileSystem(const Path & fileSystemPath) const
 {
-	return new COH_SGA_FileSystem(this, fileSystemPath);
+	NOT_IMPLEMENTED_ERROR; //TODO: implement me
 }
 
 String COH_SGA_Format::GetId() const
@@ -64,4 +64,9 @@ float32 COH_SGA_Format::Matches(SeekableInputStream & inputStream) const
 	}
 
 	return 0;
+}
+
+FileSystem *COH_SGA_Format::OpenFileSystem(const Path &fileSystemPath, bool writable) const
+{
+	return new COH_SGA_FileSystem(this, fileSystemPath);
 }

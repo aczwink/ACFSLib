@@ -25,9 +25,9 @@ using namespace StdXX;
 class BIS_PBO_Format : public FileSystemFormat
 {
 public:
-	FileSystem *CreateFileSystem(const Path &fileSystemPath) const override
+	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
-		return new BIS_PBO_FileSystem(this, fileSystemPath);
+		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 	}
 
 	String GetId() const override
@@ -53,6 +53,11 @@ public:
 		}
 
 		return 1;
+	}
+
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	{
+		return new BIS_PBO_FileSystem(this, fileSystemPath);
 	}
 
 private:

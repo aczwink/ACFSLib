@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -25,9 +25,9 @@ using namespace StdPlusPlus;
 class SCCT_UMD_Format : public FileSystemFormat
 {
 public:
-	FileSystem *CreateFileSystem(const Path &fileSystemPath) const override
+	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
-		return new SCCT_UMD_FileSystem(this, fileSystemPath);
+		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 	}
 
 	String GetId() const override
@@ -64,5 +64,10 @@ public:
 		}
 
 		return 0;
+	}
+
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	{
+		return new SCCT_UMD_FileSystem(this, fileSystemPath);
 	}
 };

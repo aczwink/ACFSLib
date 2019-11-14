@@ -24,9 +24,9 @@ using namespace StdXX;
 class EDMW_SSA_Format : public FileSystemFormat
 {
 public:
-	FileSystem *CreateFileSystem(const Path &fileSystemPath) const override
+	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
-		return new EDMW_SSA_FileSystem(this, fileSystemPath);
+		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 	}
 
 	String GetId() const override
@@ -54,5 +54,10 @@ public:
 		if(dataReader.ReadUInt32() != c_ssa_versionMinor)
 			return 0;
 		return 1;
+	}
+
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	{
+		return new EDMW_SSA_FileSystem(this, fileSystemPath);
 	}
 };

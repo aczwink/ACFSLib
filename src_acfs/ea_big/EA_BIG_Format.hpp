@@ -27,9 +27,9 @@ const uint32 ea_big4_signature = FOURCC(u8"BIG4");
 class EA_BIG_Format : public FileSystemFormat
 {
 public:
-	FileSystem *CreateFileSystem(const Path &fileSystemPath) const override
+	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
-		return new EA_BIG_FileSystem(this, fileSystemPath);
+		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 	}
 
 	String GetId() const override
@@ -57,5 +57,10 @@ public:
 		}
 
 		return 0;
+	}
+
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	{
+		return new EA_BIG_FileSystem(this, fileSystemPath);
 	}
 };

@@ -37,7 +37,7 @@ class ExampleController : public TreeController
 public:
 	ExampleController()
 	{
-		this->root = new FSNode(String(u8"/home/amir/git-repositories/"));
+		this->root = new FSNode(String(u8"/home/amir/Bilder/"));
 	}
 
 	//Methods

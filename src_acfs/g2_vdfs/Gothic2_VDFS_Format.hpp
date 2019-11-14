@@ -24,9 +24,9 @@ using namespace StdXX;
 class G2_VDFS_Format : public FileSystemFormat
 {
 public:
-	FileSystem *CreateFileSystem(const Path &fileSystemPath) const override
+	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
-		return new G2_VDFS_FileSystem(this, fileSystemPath);
+		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 	}
 
 	String GetId() const override
@@ -49,5 +49,10 @@ public:
 		if(MemCmp(VDFS_SIGNATURE, readSignature, VDFS_SIGNATURE_SIZE) == 0)
 			return 1;
 		return 0;
+	}
+
+	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	{
+		return new G2_VDFS_FileSystem(this, fileSystemPath);
 	}
 };
