@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019-2020 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -20,14 +20,16 @@
 using namespace StdXX;
 using namespace StdXX::UI;
 
-struct FSNode
+struct BufferedFileSystemNode
 {
 	Path path;
 	mutable bool childrenRead;
-	mutable DynamicArray<UniquePointer<FSNode>> children;
-	FSNode* parent;
+	mutable DynamicArray<UniquePointer<BufferedFileSystemNode>> children;
+	BufferedFileSystemNode* parent;
+	mutable uint64 size;
+	mutable FileSystemNodeType type;
 
-	FSNode(const Path& path) : path(path), childrenRead(false), parent(nullptr)
+	BufferedFileSystemNode(const Path& path) : path(path), childrenRead(false), parent(nullptr), size(0)
 	{
 	}
 };
@@ -37,15 +39,15 @@ class ExampleController : public TreeController
 public:
 	ExampleController()
 	{
-		this->root = new FSNode(String(u8"/home/amir/Bilder/"));
+		this->root = new BufferedFileSystemNode(String(u8"/home/amir/Schreibtisch/"));
 	}
 
 	//Methods
 	ControllerIndex GetChildIndex(uint32 row, uint32 column, const ControllerIndex & parent = ControllerIndex()) const override
 	{
-		const FSNode* node;
+		const BufferedFileSystemNode* node;
 		if (parent.HasParent())
-			node = (const FSNode*)parent.GetNode();
+			node = (const BufferedFileSystemNode*)parent.GetNode();
 		else
 			node = this->root.operator->();
 		this->MakeSureChildrenRead(*node);
@@ -64,9 +66,9 @@ public:
 
 	uint32 GetNumberOfChildren(const ControllerIndex & parent = ControllerIndex()) const override
 	{
-		const FSNode* node;
+		const BufferedFileSystemNode* node;
 		if (parent.HasParent())
-			node = (const FSNode*)parent.GetNode();
+			node = (const BufferedFileSystemNode*)parent.GetNode();
 		else
 			node = this->root.operator->();
 		this->MakeSureChildrenRead(*node);
@@ -80,7 +82,7 @@ public:
 
 	ControllerIndex GetParentIndex(const ControllerIndex & index) const override
 	{
-		FSNode* node = (FSNode*)index.GetNode();
+		BufferedFileSystemNode* node = (BufferedFileSystemNode*)index.GetNode();
 		if (node == this->root.operator->())
 			return {};
 		uint32 row = 0;
@@ -95,34 +97,62 @@ public:
 
 	String GetText(const ControllerIndex & index) const override
 	{
-		const FSNode* node = (const FSNode*)index.GetNode();
+		const BufferedFileSystemNode* node = (const BufferedFileSystemNode*)index.GetNode();
 		switch (index.GetColumn())
 		{
 			case 0:
-				return node->path.GetTitle();
+				return node->path.GetName();
+			case 1:
+				this->MakeSureChildrenRead(*node);
+				return String::FormatBinaryPrefixed(node->size);
+			case 2:
+			{
+				switch(node->type)
+				{
+					case FileSystemNodeType::Directory:
+						return u8"Directory";
+						break;
+					case FileSystemNodeType::File:
+						return u8"File";
+						break;
+					case FileSystemNodeType::Link:
+						return u8"Link";
+				}
+			}
 		}
-		const String data[] = { u8"example.png", u8"100 bytes", u8"png" };
-		return data[index.GetColumn()];
+		return u8"";
 	}
 
 private:
 	//Members
-	UniquePointer<FSNode> root;
+	UniquePointer<BufferedFileSystemNode> root;
 
 	//Methods
-	void MakeSureChildrenRead(const FSNode& node) const
+	void MakeSureChildrenRead(const BufferedFileSystemNode& node) const
 	{
 		if (node.childrenRead)
 			return;
 
 		node.childrenRead = true;
-		if (OSFileSystem::GetInstance().IsDirectory(node.path))
+		AutoPointer<const FileSystemNode> fsNode = OSFileSystem::GetInstance().GetNode(node.path);
+		node.type = fsNode->GetType();
+
+		if(fsNode->GetType() == FileSystemNodeType::File)
 		{
-			AutoPointer<Directory> dir = OSFileSystem::GetInstance().GetDirectory(node.path);
+			node.size = fsNode.Cast<const File>()->GetSize();
+		}
+		else
+		{
+			node.size = fsNode->QueryInfo().storedSize;
+		}
+
+		if (fsNode->GetType() == FileSystemNodeType::Directory)
+		{
+			AutoPointer<const Directory> dir = fsNode.Cast<const Directory>();
 			for (const auto& childName : *dir)
 			{
-				FSNode* childNode = new FSNode(node.path / childName);
-				childNode->parent = (FSNode*)&node;
+				BufferedFileSystemNode* childNode = new BufferedFileSystemNode(node.path / childName);
+				childNode->parent = (BufferedFileSystemNode*)&node;
 				node.children.Push(childNode);
 			}
 		}
