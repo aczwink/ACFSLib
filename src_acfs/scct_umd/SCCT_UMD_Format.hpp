@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,18 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdPlusPlus;
 //Local
 #include "UMD.hpp"
 #include "SCCT_UMD_FileSystem.hpp"
 
-class SCCT_UMD_Format : public FileSystemFormat
+class SCCT_UMD_Format : public Format
 {
 public:
-	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
+	RWFileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
 		NOT_IMPLEMENTED_ERROR; //TODO: implement me
+		return nullptr;
 	}
 
 	String GetId() const override
@@ -44,17 +45,17 @@ public:
 	{
 		UMDFooter footer;
 
-		inputStream.SetCurrentOffset(inputStream.GetSize() - sizeof(footer));
+		inputStream.SeekTo(inputStream.QuerySize() - sizeof(footer));
 		inputStream.ReadBytes(&footer, sizeof(footer));
 
 		if(footer.signature == UMD_FOOTER_SIGNATURE)
 		{
-			if(footer.fileSize != inputStream.GetSize())
+			if(footer.fileSize != inputStream.QuerySize())
 			{
 				stdErr << "Warning: File size does not match" << endl;
 				return 0.75f;
 			}
-			if(footer.fileHeadersOffset >= inputStream.GetSize() - sizeof(footer))
+			if(footer.fileHeadersOffset >= inputStream.QuerySize() - sizeof(footer))
 			{
 				stdOut << "Error: Offset to file headers is out of range. Is this a umd file?" << endl;
 				return 0.25f;
@@ -66,8 +67,13 @@ public:
 		return 0;
 	}
 
-	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	RWFileSystem *OpenFileSystem(const Path &fileSystemPath, const OpenOptions& openOptions) const override
 	{
 		return new SCCT_UMD_FileSystem(this, fileSystemPath);
+	}
+
+	ReadableFileSystem *OpenFileSystemReadOnly(const Path &fileSystemPath, const OpenOptions& openOptions) const override
+	{
+		return this->OpenFileSystem(fileSystemPath, openOptions);
 	}
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 
 enum G3_PAK_CompressionMethod
@@ -39,7 +39,7 @@ class G3_PAK_FileSystem : public ContainerFileSystem
 {
 public:
 	//Constructor
-	G3_PAK_FileSystem(const FileSystemFormat *format, const Path &fileSystemPath) : ContainerFileSystem(format, fileSystemPath)
+	G3_PAK_FileSystem(const Format *format, const Path &fileSystemPath) : ContainerFileSystem(fileSystemPath)
 	{
 		if(!this->containerInputStream.IsNull())
 			this->ReadFileHeaders();
@@ -100,7 +100,7 @@ private:
 				case G3_PAK_COMPRESSION_METHOD_NONE:
 					break;
 				case G3_PAK_COMPRESSION_METHOD_ZLIB:
-					fileHeader.compression = CompressionAlgorithm::ZLIB;
+					fileHeader.compression = CompressionStreamFormatType::zlib;
 					break;
 				default:
 					NOT_IMPLEMENTED_ERROR; //TODO: implement me
@@ -110,7 +110,7 @@ private:
 			this->ReadFilePath(inputStream);
 			//this->AddSourceFile(..., fileHeader);
 
-			this->AddSourceFile(String(u8"/") + filePath.GetString(), fileHeader);
+			this->AddSourceFile(String(u8"/") + filePath.String(), fileHeader);
 		}
 	}
 
@@ -141,13 +141,13 @@ private:
 		uint64 unknown3 = dataReader.ReadUInt64(); //points to end -4 bytes
 
 		//check unknown3
-		this->containerInputStream->SetCurrentOffset(unknown3);
-		ASSERT(this->containerInputStream->GetRemainingBytes() == 4, u8"REPORT THIS PLEASE!");
+		this->containerInputStream->SeekTo(unknown3);
+		ASSERT(this->containerInputStream->QueryRemainingBytes() == 4, u8"REPORT THIS PLEASE!");
 		ASSERT(dataReader.ReadUInt32() == 0, u8"REPORT THIS PLEASE!");
 
 		//read file headers
-		this->containerInputStream->SetCurrentOffset(fileHeadersOffset);
-		LimitedInputStream limitedInputStream(*this->containerInputStream, this->containerInputStream->GetRemainingBytes() - 4);
+		this->containerInputStream->SeekTo(fileHeadersOffset);
+		LimitedInputStream limitedInputStream(*this->containerInputStream, this->containerInputStream->QueryRemainingBytes() - 4);
 		BufferedInputStream bufferedInputStream(limitedInputStream);
 		while(!bufferedInputStream.IsAtEnd())
 		{

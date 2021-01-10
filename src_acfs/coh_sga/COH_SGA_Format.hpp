@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,16 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
+using namespace StdXX::FileSystem;
 
-class COH_SGA_Format : public FileSystemFormat
+class COH_SGA_Format : public Format
 {
 public:
 	//Methods
-	FileSystem * CreateFileSystem(const Path & fileSystemPath) const override;
+	RWFileSystem * CreateFileSystem(const Path & fileSystemPath) const override;
 	String GetId() const override;
 	String GetName() const override;
 	float32 Matches(SeekableInputStream & inputStream) const override;
-	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override;
+	RWFileSystem *OpenFileSystem(const Path &fileSystemPath, const OpenOptions& openOptions) const override;
+	ReadableFileSystem *OpenFileSystemReadOnly(const Path &fileSystemPath, const OpenOptions& openOptions) const override;
 };

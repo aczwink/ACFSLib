@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 //Local
 #include "BIS_PBO_CompressedFile.hpp"
@@ -25,7 +25,7 @@ class BIS_PBO_FileSystem : public ContainerFileSystem
 {
 public:
 	//Constructor
-	inline BIS_PBO_FileSystem(const FileSystemFormat *format, const Path &fileSystemPath) : ContainerFileSystem(format, fileSystemPath)
+	inline BIS_PBO_FileSystem(const Format *format, const Path &fileSystemPath) : ContainerFileSystem(fileSystemPath)
 	{
 		if (!this->containerInputStream.IsNull())
 			this->ReadFileHeaders();

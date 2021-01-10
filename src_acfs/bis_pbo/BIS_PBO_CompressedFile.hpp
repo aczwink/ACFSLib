@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 
 class BIS_PBO_Decompressor : public Decompressor
@@ -150,7 +150,7 @@ private:
 	}
 
 	//Inline
-	inline bool PassthroughByte(uint8 byte)
+	inline void PassthroughByte(uint8 byte)
 	{
 		this->buffer.WriteBytes(&byte, 1);
 		this->dict.Append(byte);

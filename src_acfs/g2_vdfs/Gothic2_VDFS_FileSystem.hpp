@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 
 #define VDFS_SIGNATURE u8"PSVDSC_V2.00\n\r\n\r"
@@ -41,7 +41,7 @@ class G2_VDFS_FileSystem : public ContainerFileSystem
 {
 public:
 	//Constructor
-	inline G2_VDFS_FileSystem(const FileSystemFormat *format, const Path &fileSystemPath) : ContainerFileSystem(format, fileSystemPath)
+	inline G2_VDFS_FileSystem(const Format *format, const Path &fileSystemPath) : ContainerFileSystem(fileSystemPath)
 	{
 		if(!this->containerInputStream.IsNull())
 			this->ReadFileHeaders();
@@ -71,7 +71,7 @@ private:
 		uint32 entrySize = dataReader.ReadUInt32();
 		ASSERT(entrySize == 80, u8"REPORT THIS PLEASE!");
 
-		this->containerInputStream->SetCurrentOffset(rootOffset);
+		this->containerInputStream->SeekTo(rootOffset);
 
 		return nEntries;
 	}

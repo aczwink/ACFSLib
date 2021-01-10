@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -28,11 +28,11 @@
 
 void RegisterACFSFileSystemFormats()
 {
-	FileSystemFormat::Register(new BIS_PBO_Format);
-	FileSystemFormat::Register(new COH_SGA_Format);
-	FileSystemFormat::Register(new EA_BIG_Format);
-	FileSystemFormat::Register(new EDMW_SSA_Format);
-	FileSystemFormat::Register(new G2_VDFS_Format);
-	FileSystemFormat::Register(new G3_PAK_Format);
-	FileSystemFormat::Register(new SCCT_UMD_Format);
+	Format::Register(new BIS_PBO_Format);
+	Format::Register(new COH_SGA_Format);
+	Format::Register(new EA_BIG_Format);
+	Format::Register(new EDMW_SSA_Format);
+	Format::Register(new G2_VDFS_Format);
+	Format::Register(new G3_PAK_Format);
+	Format::Register(new SCCT_UMD_Format);
 }

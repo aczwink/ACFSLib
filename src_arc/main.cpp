@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,11 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 #include <ACFSLib.hpp>
 using namespace StdXX;
+using namespace StdXX::CommandLine;
+using namespace StdXX::FileSystem;
 
-void Extract(AutoPointer<const Directory> dir, const Path &outputPath)
+void Extract(AutoPointer<const Directory> dir, const Path& dirPath, const Path &outputPath)
 {
 	OSFileSystem::GetInstance().CreateDirectoryTree(outputPath);
 	/*
@@ -33,16 +35,17 @@ void Extract(AutoPointer<const Directory> dir, const Path &outputPath)
 
 	for(const auto &childName : *dir)
 	{
-		Path currentPath = outputPath / childName;
+		Path currentOutputPath = outputPath / childName;
+
 		auto child = dir->GetChild(childName);
 		if(child.IsInstanceOf<const Directory>())
 		{
-			Extract(child.Cast<const Directory>(), currentPath);
+			Extract(child.Cast<const Directory>(), dirPath / childName, currentOutputPath);
 		}
 		else
 		{
 			AutoPointer<const File> file = child.Cast<const File>();
-			stdOut << u8"Currently extracting " << dir->GetPath() / childName << u8" (" << String::FormatBinaryPrefixed(file->GetSize()) << u8")" << endl;
+			stdOut << u8"Currently extracting " << dirPath / childName << u8" (" << String::FormatBinaryPrefixed(file->QueryInfo().size) << u8")" << endl;
 			UniquePointer<InputStream> input = file->OpenForReading(true);
 			/*
 			 * if(!currentFile.Open(output + '\\' + CString(data.fileHeaders.pFileHeaders[i].pFileName)))
@@ -51,49 +54,108 @@ void Extract(AutoPointer<const Directory> dir, const Path &outputPath)
 			return false;
 		}
 			 */
-			FileOutputStream output(currentPath);
+			FileOutputStream output(currentOutputPath);
 			input->FlushTo(output);
 		}
 	}
 }
 
-void PrintManual()
+UniquePointer<ReadableFileSystem> OpenFileSystemReadOnly(const Path& inputPath, bool withPw)
 {
-	stdOut
-		<< u8"Usage: "
-		<< endl
-		<< u8"  " << u8"ArC archive [command...]"
-		<< endl
-		<< endl
-		<< u8"   archive:      path to a file system"
-		<< endl
-		<< u8"   command:"
-		<< endl
-		<< u8"     e     extract archive"
-		<< endl
-		<< u8"     o     open archive"
-		<< endl
-		<< endl;
+	const Format* fsFormat = Format::FindBestFormat(inputPath);
+	if(fsFormat == nullptr)
+	{
+		stdErr << "Error could not open input file" << endl;
+		return nullptr;
+	}
+
+	stdOut << u8"Found file system: " << fsFormat->GetName() << endl;
+
+	OpenOptions options;
+	if(withPw)
+	{
+		stdOut << u8"Enter password: ";
+		options.password = stdIn.ReadUnechoedLine();
+	}
+
+	UniquePointer<ReadableFileSystem> fileSystem = fsFormat->OpenFileSystemReadOnly(inputPath, options);
+	if(fileSystem.IsNull())
+	{
+		stdOut << u8"Couldn't open archive. Probably unknown file system." << endl;
+		return nullptr;
+	}
+
+	stdOut << u8"File system size: " << String::FormatBinaryPrefixed(fileSystem->QuerySpace().totalSize) << endl;
+	return fileSystem;
 }
 
 int32 Main(const String &programName, const FixedArray<String> &args)
 {
 	RegisterACFSFileSystemFormats();
 
-	//At least the archive must be mentioned
-	if(args.GetNumberOfElements() < 1)
+	Parser commandLineParser(programName);
+	commandLineParser.AddHelpOption();
+
+	SubCommandArgument subCommandArgument(u8"command", u8"The command that should be executed");
+
+	Option passwordOption(u8'p', u8"password", u8"Specify password for opening an encrypted filesystem");
+	commandLineParser.AddOption(passwordOption);
+
+	Group extract(u8"extract", u8"Extract a filesystem");
+	subCommandArgument.AddCommand(extract);
+
+	Group mount(u8"mount", u8"Mount a filesystem");
+	PathArgument mountPointArg(u8"mountPoint", u8"Path where the filesystem should be mounted");
+	mount.AddPositionalArgument(mountPointArg);
+	subCommandArgument.AddCommand(mount);
+
+	PathArgument inputPathArg(u8"fsPath", u8"path to the filesystem");
+
+	commandLineParser.AddPositionalArgument(subCommandArgument);
+	commandLineParser.AddPositionalArgument(inputPathArg);
+
+	if(!commandLineParser.Parse(args))
 	{
-		PrintManual();
+		stdErr << commandLineParser.GetErrorText() << endl;
+		return EXIT_FAILURE;
+	}
+
+	if(commandLineParser.IsHelpActivated())
+	{
+		commandLineParser.PrintHelp();
 		return EXIT_SUCCESS;
 	}
 
-	//load file system
-	Path inputPath = OSFileSystem::GetInstance().FromNativePath(args[0]);
-	UniquePointer<FileSystem> fileSystem;
+	const MatchResult& matchResult = commandLineParser.ParseResult();
 
-	//execute commands
-	for(uint32 i = 1; i < args.GetNumberOfElements(); i++)
+	if(matchResult.IsActivated(extract))
 	{
+		Path inputPath = inputPathArg.Value(matchResult);
+		UniquePointer<ReadableFileSystem> fileSystem = OpenFileSystemReadOnly(inputPath, matchResult.IsActivated(passwordOption));
+		if(!fileSystem.IsNull())
+		{
+			Path outputPath = OSFileSystem::GetInstance().ToAbsolutePath(inputPath).GetParent() / inputPath.GetTitle();
+			Path root = String(u8"/");
+			Extract(fileSystem->GetDirectory(root), root, outputPath);
+
+			return EXIT_SUCCESS;
+		}
+	}
+	else if(matchResult.IsActivated(mount))
+	{
+		Path inputPath = inputPathArg.Value(matchResult);
+		Path mountPoint = mountPointArg.Value(matchResult);
+		UniquePointer<ReadableFileSystem> fileSystem = OpenFileSystemReadOnly(inputPath, matchResult.IsActivated(passwordOption));
+		if(!fileSystem.IsNull())
+		{
+			OSFileSystem::GetInstance().MountReadOnly(mountPoint, *fileSystem);
+			return EXIT_SUCCESS;
+		}
+	}
+
+	return EXIT_FAILURE;
+
+		/*
 		if(args[i] == u8"af")
 		{
 			if(fileSystem.IsNull())
@@ -112,7 +174,7 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 		{
 			String fsId = args[++i];
 
-			fileSystem = FileSystem::Create(fsId, inputPath);
+			fileSystem = RWFileSystem::Create(fsId, inputPath);*/
 			/*
 	 * if(!file.Open(output))
 	{
@@ -120,46 +182,5 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 		return false;
 	}
 	 */
-		}
-		else if(args[i] == u8"e")
-		{
-			if(fileSystem.IsNull())
-			{
-				stdErr << u8"No filesystem is loaded. Can't extract..." << endl;
-				return EXIT_FAILURE;
-			}
-
-			Path outputPath = OSFileSystem::GetInstance().ToAbsolutePath(inputPath).GetParent() / inputPath.GetTitle();
-			Extract(fileSystem->GetRoot(), outputPath);
-		}
-		else if(args[i] == u8"o")
-		{
-			fileSystem = FileSystem::LoadFromFile(inputPath);
-			/*
-			 * * if(!file.Open(input))
-			 * {
-			 * stdErr << "Error could not open input file" << endl;
-			 * return false;
-			 * }
-			 * */
-
-			if(fileSystem.IsNull())
-			{
-				stdOut << u8"Couldn't open archive. Probably unknown file system." << endl;
-				return EXIT_SUCCESS;
-			}
-
-			stdOut << u8"Found file system: " << fileSystem->GetFormat()->GetName() << endl;
-			stdOut << u8"File system size: " << String::FormatBinaryPrefixed(fileSystem->GetSize()) << endl;
-		}
-		else
-		{
-			stdErr << u8"Invalid command: " << args[i] << endl;
-			PrintManual();
-			return EXIT_FAILURE;
-		}
-	}
-
-	stdOut << endl << u8"Done." << endl;
-	return EXIT_SUCCESS;
+		//}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 
 #include "EA_BIG_FileSystem.hpp"
@@ -24,12 +24,13 @@ using namespace StdXX;
 const uint32 ea_big_signature = FOURCC(u8"BIGF");
 const uint32 ea_big4_signature = FOURCC(u8"BIG4");
 
-class EA_BIG_Format : public FileSystemFormat
+class EA_BIG_Format : public Format
 {
 public:
-	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
+	RWFileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
 		NOT_IMPLEMENTED_ERROR; //TODO: implement me
+		return nullptr;
 	}
 
 	String GetId() const override
@@ -50,7 +51,7 @@ public:
 		if((readSignature == ea_big_signature) || (readSignature == ea_big4_signature))
 		{
 			uint64 readSize = dataReader.ReadUInt32();
-			uint64 archiveSize = inputStream.GetSize();
+			uint64 archiveSize = inputStream.QuerySize();
 			if(archiveSize > readSize)
 				return 1.0f - ((archiveSize - readSize) / float32(archiveSize));
 			return 1.0f - ((readSize - archiveSize + 1) / float32(readSize + 1));
@@ -59,8 +60,13 @@ public:
 		return 0;
 	}
 
-	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	RWFileSystem *OpenFileSystem(const Path &fileSystemPath, const OpenOptions& openOptions) const override
 	{
 		return new EA_BIG_FileSystem(this, fileSystemPath);
+	}
+
+	ReadableFileSystem *OpenFileSystemReadOnly(const Path &fileSystemPath, const OpenOptions& openOptions) const override
+	{
+		return this->OpenFileSystem(fileSystemPath, openOptions);
 	}
 };

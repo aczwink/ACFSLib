@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 
 class SCCT_UMD_FileSystem : public ContainerFileSystem
 {
 public:
 	//Constructor
-	SCCT_UMD_FileSystem(const FileSystemFormat *format, const Path &fileSystemPath) : ContainerFileSystem(format, fileSystemPath)
+	SCCT_UMD_FileSystem(const Format *format, const Path &fileSystemPath) : ContainerFileSystem(fileSystemPath)
 	{
 		if(!this->containerInputStream.IsNull())
 			this->ReadFileHeaders();
@@ -60,7 +60,7 @@ public:
 				FileHeader fh;
 				fh.filePath = filePath;
 				fh.dataOffset = offset;
-				fh.fileSize = static_cast<uint32>(file->GetSize());
+				fh.fileSize = static_cast<uint32>(file->QueryInfo().size);
 				offset += fh.fileSize;
 				fileHeaders.InsertTail(fh);
 
@@ -75,7 +75,7 @@ public:
 			TextWriter textWriter(nameBuffer, TextCodecType::ASCII);
 			for(const auto &fh : fileHeaders)
 			{
-				String fileName = fh.filePath.GetString();
+				String fileName = fh.filePath.String();
 				fileName = fileName.SubString(1); //remove the root "/"
 				fileName = fileName.Replace(u8"/", u8"\\");
 				textWriter.WriteString(fileName);
@@ -142,11 +142,11 @@ private:
 	void ReadFileHeaders()
 	{
 		UMDFooter footer;
-		this->containerInputStream->SetCurrentOffset(this->containerInputStream->GetSize() - sizeof(footer));
+		this->containerInputStream->SeekTo(this->containerInputStream->QuerySize() - sizeof(footer));
 		this->containerInputStream->ReadBytes(&footer, sizeof(footer));
 
 		//read file headers
-		this->containerInputStream->SetCurrentOffset(footer.fileHeadersOffset);
+		this->containerInputStream->SeekTo(footer.fileHeadersOffset);
 
 		BufferedInputStream bufferedInputStream(*this->containerInputStream);
 		DataReader dataReader(false, bufferedInputStream);

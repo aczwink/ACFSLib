@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,18 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
+using namespace StdXX::FileSystem;
 //Local
 #include "PBO.hpp"
 #include "BIS_PBO_FileSystem.hpp"
 
-class BIS_PBO_Format : public FileSystemFormat
+class BIS_PBO_Format : public Format
 {
 public:
-	FileSystem * CreateFileSystem(const Path &fileSystemPath) const override
+	RWFileSystem * CreateFileSystem(const Path &fileSystemPath) const override
 	{
 		NOT_IMPLEMENTED_ERROR; //TODO: implement me
+		return nullptr;
 	}
 
 	String GetId() const override
@@ -55,9 +57,14 @@ public:
 		return 1;
 	}
 
-	FileSystem *OpenFileSystem(const Path &fileSystemPath, bool writable) const override
+	RWFileSystem *OpenFileSystem(const Path &fileSystemPath, const OpenOptions& openOptions) const override
 	{
 		return new BIS_PBO_FileSystem(this, fileSystemPath);
+	}
+
+	ReadableFileSystem *OpenFileSystemReadOnly(const Path &fileSystemPath, const OpenOptions& openOptions) const override
+	{
+		return this->OpenFileSystem(fileSystemPath, openOptions);
 	}
 
 private:

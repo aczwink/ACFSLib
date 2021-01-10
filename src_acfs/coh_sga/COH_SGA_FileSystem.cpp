@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -76,7 +76,7 @@ void COH_SGA_FileSystem::ReadFileHeaders()
 	uint16 nStrings = reader.ReadUInt16();
 
 	//read toc
-	this->containerInputStream->SetCurrentOffset(dataHeaderOffset + tocOffset);
+	this->containerInputStream->SeekTo(dataHeaderOffset + tocOffset);
 	String tocName = textReader.ReadZeroTerminatedString(64);
 	textReader.ReadString(64); //archive name or so... unimportant
 	reader.Skip(2); //always zero
@@ -84,7 +84,7 @@ void COH_SGA_FileSystem::ReadFileHeaders()
 	reader.Skip(4); //nFiles
 
 	//read dirs
-	this->containerInputStream->SetCurrentOffset(dataHeaderOffset + dirsOffset);
+	this->containerInputStream->SeekTo(dataHeaderOffset + dirsOffset);
 	FixedArray<DirEntry> dirEntries(nDirs);
 	for (uint16 i = 0; i < nDirs; i++)
 	{
@@ -98,7 +98,7 @@ void COH_SGA_FileSystem::ReadFileHeaders()
 	}
 
 	//read files
-	this->containerInputStream->SetCurrentOffset(dataHeaderOffset + filesOffset);
+	this->containerInputStream->SeekTo(dataHeaderOffset + filesOffset);
 	FixedArray<FileEntry> fileEntries(nFiles);
 	for (uint16 i = 0; i < nFiles; i++)
 	{
@@ -119,7 +119,7 @@ void COH_SGA_FileSystem::ReadFileHeaders()
 	}
 
 	//read strings
-	this->containerInputStream->SetCurrentOffset(dataHeaderOffset + stringsOffset);
+	this->containerInputStream->SeekTo(dataHeaderOffset + stringsOffset);
 	Map<uint32, String> stringMap;
 	for (uint16 i = 0; i < nStrings; i++)
 	{
@@ -139,7 +139,7 @@ void COH_SGA_FileSystem::ReadFileHeaders()
 
 			ContainerFileHeader header;
 			ASSERT(fileEntry.flags == 0x100, u8"unknown flagss"); //compression method, 0x100 = zlib
-			header.compression = CompressionAlgorithm::ZLIB;
+			header.compression = CompressionStreamFormatType::zlib;
 			header.offset = dataOffset + fileEntry.dataOffset;
 			header.uncompressedSize = fileEntry.uncompressedSize;
 			header.compressedSize = fileEntry.compressedSize;

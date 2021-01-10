@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
 //Local
 #include "EDMW_SSA_CompressedFile.hpp"
@@ -25,7 +25,7 @@ class EDMW_SSA_FileSystem : public ContainerFileSystem
 {
 public:
 	//Constructor
-	inline EDMW_SSA_FileSystem(const FileSystemFormat *format, const Path &fileSystemPath) : ContainerFileSystem(format, fileSystemPath)
+	inline EDMW_SSA_FileSystem(const Format *format, const Path &fileSystemPath) : ContainerFileSystem(fileSystemPath)
 	{
 		if (!this->containerInputStream.IsNull())
 			this->ReadFileHeaders();
@@ -80,7 +80,7 @@ private:
 		const uint32 c_pk01_signature = FOURCC(u8"PK01");
 
 		uint64 currentOffset = this->containerInputStream->GetCurrentOffset();
-		this->containerInputStream->SetCurrentOffset(fileHeader.offset);
+		this->containerInputStream->SeekTo(fileHeader.offset);
 
 		BufferedInputStream bufferedInputStream(*this->containerInputStream);
 		DataReader dataReader(false, bufferedInputStream);
@@ -97,7 +97,7 @@ private:
 			compressed = false;
 		}
 
-		this->containerInputStream->SetCurrentOffset(currentOffset);
+		this->containerInputStream->SeekTo(currentOffset);
 		return compressed;
 	}
 };
