@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018,2021 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2023 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -22,50 +22,45 @@ using namespace StdXX;
 using namespace StdXX::CommandLine;
 using namespace StdXX::FileSystem;
 
-void Extract(AutoPointer<const Directory> dir, const Path& dirPath, const Path &outputPath)
+//Prototypes
+void DumpInfo(const ReadableFileSystem& readableFileSystem);
+void Extract(const ReadableFileSystem& readableFileSystem, const Path& dirPath, const Path &outputPath);
+void Pack(const Path& inputPath, WritableFileSystem& writableFileSystem);
+
+UniquePointer<WritableFileSystem> CreateFileSystem(const Path& outputPath, bool withPw)
 {
-	OSFileSystem::GetInstance().CreateDirectoryTree(outputPath);
-	/*
-	 * if(!currentPath.GetParent().CreateDirectoryTree())
-		{
-			stdErr << endl << "Could not create folder \"" << currentPath << "\"." << endl;
-			return false;
-		}
-	 */
-
-	for(const auto &childName : *dir)
+	const Format* fsFormat = FileSystemsManager::Instance().FindFormatById(outputPath.GetFileExtension());
+	if(fsFormat == nullptr)
 	{
-		Path currentOutputPath = outputPath / childName;
-
-		auto child = dir->GetChild(childName);
-		if(child.IsInstanceOf<const Directory>())
-		{
-			Extract(child.Cast<const Directory>(), dirPath / childName, currentOutputPath);
-		}
-		else
-		{
-			AutoPointer<const File> file = child.Cast<const File>();
-			stdOut << u8"Currently extracting " << dirPath / childName << u8" (" << String::FormatBinaryPrefixed(file->QueryInfo().size) << u8")" << endl;
-			UniquePointer<InputStream> input = file->OpenForReading(true);
-			/*
-			 * if(!currentFile.Open(output + '\\' + CString(data.fileHeaders.pFileHeaders[i].pFileName)))
-		{
-			stdErr << endl << "Could not create file \"" << data.fileHeaders.pFileHeaders[i].pFileName << "\" in directory \"" << output << '"' << endl;
-			return false;
-		}
-			 */
-			FileOutputStream output(currentOutputPath);
-			input->FlushTo(output);
-		}
+		stdErr << "Error: Could not determine a format for the output file" << endl;
+		return nullptr;
 	}
+
+	stdOut << u8"Creating filesystem of type: " << fsFormat->GetName() << endl;
+
+	OpenOptions options;
+	if(withPw)
+	{
+		stdOut << u8"Enter password: ";
+		options.password = stdIn.ReadUnechoedLine();
+	}
+
+	UniquePointer<WritableFileSystem> fileSystem = fsFormat->CreateFileSystem(outputPath, options);
+	if(fileSystem.IsNull())
+	{
+		stdOut << u8"Couldn't create filesystem." << endl;
+		return nullptr;
+	}
+
+	return fileSystem;
 }
 
 UniquePointer<ReadableFileSystem> OpenFileSystemReadOnly(const Path& inputPath, bool withPw)
 {
-	const Format* fsFormat = Format::FindBestFormat(inputPath);
+	const Format* fsFormat = FileSystemsManager::Instance().ProbeFormat(inputPath);
 	if(fsFormat == nullptr)
 	{
-		stdErr << "Error could not open input file" << endl;
+		stdErr << "Error: Could not determine a format for the input file" << endl;
 		return nullptr;
 	}
 
@@ -104,10 +99,18 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 	Group extract(u8"extract", u8"Extract a filesystem");
 	subCommandArgument.AddCommand(extract);
 
+	Group info(u8"info", u8"Dump information about a filesystem");
+	subCommandArgument.AddCommand(info);
+
 	Group mount(u8"mount", u8"Mount a filesystem");
 	PathArgument mountPointArg(u8"mountPoint", u8"Path where the filesystem should be mounted");
 	mount.AddPositionalArgument(mountPointArg);
 	subCommandArgument.AddCommand(mount);
+
+	Group pack(u8"pack", u8"Pack a directory into a filesystem");
+	PathArgument outputArg(u8"output", u8"Path to the target filesystem");
+	pack.AddPositionalArgument(outputArg);
+	subCommandArgument.AddCommand(pack);
 
 	PathArgument inputPathArg(u8"fsPath", u8"path to the filesystem");
 
@@ -134,9 +137,21 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 		UniquePointer<ReadableFileSystem> fileSystem = OpenFileSystemReadOnly(inputPath, matchResult.IsActivated(passwordOption));
 		if(!fileSystem.IsNull())
 		{
-			Path outputPath = OSFileSystem::GetInstance().ToAbsolutePath(inputPath).GetParent() / inputPath.GetTitle();
+			Path outputPath = FileSystemsManager::Instance().OSFileSystem().ToAbsolutePath(inputPath).GetParent() / inputPath.GetTitle();
 			Path root = String(u8"/");
-			Extract(fileSystem->GetDirectory(root), root, outputPath);
+			Extract(*fileSystem, root, outputPath);
+
+			return EXIT_SUCCESS;
+		}
+	}
+	else if(matchResult.IsActivated(info))
+	{
+		Path inputPath = inputPathArg.Value(matchResult);
+		UniquePointer<ReadableFileSystem> fileSystem = OpenFileSystemReadOnly(inputPath, matchResult.IsActivated(passwordOption));
+		if(!fileSystem.IsNull())
+		{
+			Path root = String(u8"/");
+			DumpInfo(*fileSystem);
 
 			return EXIT_SUCCESS;
 		}
@@ -148,39 +163,21 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 		UniquePointer<ReadableFileSystem> fileSystem = OpenFileSystemReadOnly(inputPath, matchResult.IsActivated(passwordOption));
 		if(!fileSystem.IsNull())
 		{
-			OSFileSystem::GetInstance().MountReadOnly(mountPoint, *fileSystem);
+			FileSystemsManager::Instance().OSFileSystem().MountReadOnly(mountPoint, *fileSystem);
+			return EXIT_SUCCESS;
+		}
+	}
+	else if(matchResult.IsActivated(pack))
+	{
+		Path inputPath = inputPathArg.Value(matchResult);
+		Path outputPath = outputArg.Value(matchResult);
+		UniquePointer<WritableFileSystem> fileSystem = CreateFileSystem(outputPath, matchResult.IsActivated(passwordOption));
+		if(!fileSystem.IsNull())
+		{
+			Pack(inputPath, *fileSystem);
 			return EXIT_SUCCESS;
 		}
 	}
 
 	return EXIT_FAILURE;
-
-		/*
-		if(args[i] == u8"af")
-		{
-			if(fileSystem.IsNull())
-			{
-				stdErr << u8"No filesystem is loaded. Can't add..." << endl;
-				return EXIT_FAILURE;
-			}
-
-			String fileName = args[++i];
-
-			UniquePointer<OutputStream> targetFile = fileSystem->CreateFile(fileName);
-			FileInputStream origFile(fileName);
-			origFile.FlushTo(*targetFile);
-		}
-		else if(args[i] == u8"c")
-		{
-			String fsId = args[++i];
-
-			fileSystem = RWFileSystem::Create(fsId, inputPath);*/
-			/*
-	 * if(!file.Open(output))
-	{
-		stdErr << "Couldn't open output file: '" << output << '\'' << endl;
-		return false;
-	}
-	 */
-		//}
 }

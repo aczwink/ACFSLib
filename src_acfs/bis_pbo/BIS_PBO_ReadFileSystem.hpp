@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019-2023 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -19,25 +19,37 @@
 #include <StdXX.hpp>
 using namespace StdXX;
 //Local
-#include "BIS_PBO_CompressedFile.hpp"
+#include "BIS_PBO_Decompressor.hpp"
+#include "PBO.hpp"
 
-class BIS_PBO_FileSystem : public ContainerFileSystem
+struct PBOFileHeader : public ContainerFileHeader
+{
+	bool isCompressed;
+};
+
+class BIS_PBO_ReadFileSystem : public CustomArchiveFileSystem<PBOFileHeader>
 {
 public:
 	//Constructor
-	inline BIS_PBO_FileSystem(const Format *format, const Path &fileSystemPath) : ContainerFileSystem(fileSystemPath)
+	inline BIS_PBO_ReadFileSystem(SeekableInputStream* containerInputStream) : CustomArchiveFileSystem(*containerInputStream), containerInputStream(containerInputStream)
 	{
-		if (!this->containerInputStream.IsNull())
-			this->ReadFileHeaders();
-	}
-
-	void Flush() override
-	{
-		NOT_IMPLEMENTED_ERROR; //TODO: implement me
+		this->ReadFileHeaders();
 	}
 
 private:
+	//State
+	UniquePointer<SeekableInputStream> containerInputStream;
+
 	//Methods
+	void AddTypedFilters(ChainedInputStream &chainedInputStream, const PBOFileHeader &header, bool verify) const override
+	{
+		if(header.isCompressed)
+		{
+			chainedInputStream.Add(new BufferedInputStream(chainedInputStream.GetEnd())); //add a buffer for performance
+			chainedInputStream.Add(new BIS_PBO_Decompressor(chainedInputStream.GetEnd(), header.size, verify));
+		}
+	}
+
 	void ReadFileHeaders()
 	{
 		BufferedInputStream bufferedInputStream(*this->containerInputStream);
@@ -81,22 +93,21 @@ private:
 		//TODO: for elite it is a 4 byte byte sum and for arma it is a sha1 hash
 
 		//add files
-		uint64 offset = this->containerInputStream->GetCurrentOffset() - bufferedInputStream.GetBytesAvailable();
+		uint64 offset = this->containerInputStream->QueryCurrentOffset() - bufferedInputStream.GetBytesAvailable();
 		for(const PboHeaderEntry& fileEntry : fileEntries)
 		{
-			ContainerFileHeader fileHeader;
+			PBOFileHeader fileHeader;
 
-			fileHeader.compressedSize = fileEntry.blockSize;
+			fileHeader.type = FileType::File;
+			fileHeader.storedSize = fileEntry.blockSize;
 			fileHeader.offset = offset;
-			fileHeader.uncompressedSize = fileEntry.uncompressedSize;
+			fileHeader.size = fileEntry.uncompressedSize;
+			fileHeader.isCompressed = (fileEntry.entryType == PboEntryType::Compressed);
 
 			if((fileEntry.entryType == PboEntryType::Uncompressed) && (fileEntry.uncompressedSize == 0))
-				fileHeader.uncompressedSize = fileEntry.blockSize;
+				fileHeader.size = fileEntry.blockSize;
 
-			if(fileEntry.entryType == PboEntryType::Compressed)
-				this->AddSourceFile(fileEntry.filePath, new BIS_PBO_CompressedFile(fileHeader, this));
-			else
-			this->AddSourceFile(fileEntry.filePath, fileHeader);
+			this->AddSourceFile(fileEntry.filePath, Move(fileHeader));
 
 			offset += fileEntry.blockSize;
 		}

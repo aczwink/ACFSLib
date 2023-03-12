@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019,2021 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2018-2023 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
 //Class header
 #include "COH_SGA_Format.hpp"
 //Local
@@ -76,3 +77,4 @@ ReadableFileSystem *COH_SGA_Format::OpenFileSystemReadOnly(const Path &fileSyste
 {
 	return this->OpenFileSystem(fileSystemPath, openOptions);
 }
+*/

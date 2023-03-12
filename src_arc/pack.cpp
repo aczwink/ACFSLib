@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2023 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2023 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,20 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include <StdXX.hpp>
+using namespace StdXX;
+using namespace StdXX::FileSystem;
 
-enum class PboEntryType
+void Pack(const Path& inputPath, WritableFileSystem& writableFileSystem)
 {
-	Uncompressed = 0,
-	Compressed = FOURCC(u8"srpC"), //i'd guess "Cprs" means compressed and this is inversed because of endianness
-	Version = FOURCC(u8"sreV") //quite likely "Version" and inversed because of endianness
-};
-
-struct PboHeaderEntry
-{
-	String filePath;
-	PboEntryType entryType;
-	uint32 uncompressedSize;
-	uint32 timeStamp;
-	uint32 blockSize;
-};
+	NOT_IMPLEMENTED_ERROR; //TODO: implement me
+}

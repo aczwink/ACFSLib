@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 project(ACFSLib)
 find_package(XP-CMake REQUIRED) #we need advanced cmake modules
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 XPC_AutoBuildType()
 XPC_OptForHost()
@@ -15,7 +15,7 @@ add_library(acfs include/ACFSLib.hpp ${SOURCE_FILES})
 target_include_directories(acfs PRIVATE include)
 target_link_libraries(acfs PRIVATE Std++)
 
-add_executable(ArC src_arc/main.cpp)
+add_executable(ArC src_arc/main.cpp src_arc/extract.cpp src_arc/info.cpp src_arc/pack.cpp)
 target_include_directories(ArC PRIVATE include)
 target_link_libraries(ArC Std++ Std++Static acfs)
 

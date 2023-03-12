@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019,2021 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019-2023 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -20,15 +20,15 @@
 using namespace StdXX;
 using namespace StdXX::FileSystem;
 //Local
+#include "BIS_PBO_ReadFileSystem.hpp"
 #include "PBO.hpp"
-#include "BIS_PBO_FileSystem.hpp"
 
 class BIS_PBO_Format : public Format
 {
 public:
-	RWFileSystem * CreateFileSystem(const Path &fileSystemPath) const override
+	//Methods
+	WritableFileSystem* CreateFileSystem(const Path &fileSystemPath, const OpenOptions& options) const override
 	{
-		NOT_IMPLEMENTED_ERROR; //TODO: implement me
 		return nullptr;
 	}
 
@@ -42,9 +42,19 @@ public:
 		return u8"Bohemia Interactive Studios PBO";
 	}
 
-	float32 Matches(SeekableInputStream &inputStream) const override
+	RWFileSystem *OpenFileSystem(const Path &fileSystemPath, const OpenOptions& openOptions) const override
 	{
-		BufferedInputStream bufferedInputStream(inputStream);
+		return nullptr;
+	}
+
+	ReadableFileSystem *OpenFileSystemReadOnly(const Path &fileSystemPath, const OpenOptions& openOptions) const override
+	{
+		return new BIS_PBO_ReadFileSystem(new FileInputStream(fileSystemPath));
+	}
+
+	float32 Probe(SeekableInputStream &seekableInputStream) const override
+	{
+		BufferedInputStream bufferedInputStream(seekableInputStream);
 
 		//try to parse pbo headers
 		bool gotLastHeader = false;
@@ -55,16 +65,6 @@ public:
 		}
 
 		return 1;
-	}
-
-	RWFileSystem *OpenFileSystem(const Path &fileSystemPath, const OpenOptions& openOptions) const override
-	{
-		return new BIS_PBO_FileSystem(this, fileSystemPath);
-	}
-
-	ReadableFileSystem *OpenFileSystemReadOnly(const Path &fileSystemPath, const OpenOptions& openOptions) const override
-	{
-		return this->OpenFileSystem(fileSystemPath, openOptions);
 	}
 
 private:
@@ -97,7 +97,7 @@ private:
 					last = true;
 				}
 			}
-			break;
+				break;
 			case (uint32)PboEntryType::Version:
 			{
 				ASSERT(pboEntry.filePath.IsEmpty(), u8"RERPORT THIS PLEASE!");
@@ -108,7 +108,7 @@ private:
 				}
 				while(!string.IsEmpty());
 			}
-			break;
+				break;
 			default:
 				return false;
 		}
