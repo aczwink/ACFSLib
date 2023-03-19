@@ -18,6 +18,7 @@
  */
 #include <StdXX.hpp>
 using namespace StdXX;
+using namespace StdXX::FileSystem;
 //Local
 #include "BIS_PBO_Decompressor.hpp"
 #include "PBO.hpp"
@@ -61,7 +62,7 @@ private:
 		DynamicArray<PboHeaderEntry> fileEntries;
 		while(true)
 		{
-			String filePath = textReader.ReadZeroTerminatedString();;
+			String filePath = textReader.ReadZeroTerminatedString();
 			headerEntry.entryType = static_cast<PboEntryType>(dataReader.ReadUInt32());
 			headerEntry.uncompressedSize = dataReader.ReadUInt32();
 			dataReader.Skip(4); //zero

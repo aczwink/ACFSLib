@@ -91,31 +91,34 @@ int32 Main(const String &programName, const FixedArray<String> &args)
 	Parser commandLineParser(programName);
 	commandLineParser.AddHelpOption();
 
+	PathArgument inputPathArg(u8"fsPath", u8"path to the filesystem");
+
 	SubCommandArgument subCommandArgument(u8"command", u8"The command that should be executed");
 
 	Option passwordOption(u8'p', u8"password", u8"Specify password for opening an encrypted filesystem");
 	commandLineParser.AddOption(passwordOption);
 
 	Group extract(u8"extract", u8"Extract a filesystem");
+	extract.AddPositionalArgument(inputPathArg);
 	subCommandArgument.AddCommand(extract);
 
 	Group info(u8"info", u8"Dump information about a filesystem");
+	info.AddPositionalArgument(inputPathArg);
 	subCommandArgument.AddCommand(info);
 
 	Group mount(u8"mount", u8"Mount a filesystem");
+	mount.AddPositionalArgument(inputPathArg);
 	PathArgument mountPointArg(u8"mountPoint", u8"Path where the filesystem should be mounted");
 	mount.AddPositionalArgument(mountPointArg);
 	subCommandArgument.AddCommand(mount);
 
 	Group pack(u8"pack", u8"Pack a directory into a filesystem");
+	pack.AddPositionalArgument(inputPathArg);
 	PathArgument outputArg(u8"output", u8"Path to the target filesystem");
 	pack.AddPositionalArgument(outputArg);
 	subCommandArgument.AddCommand(pack);
 
-	PathArgument inputPathArg(u8"fsPath", u8"path to the filesystem");
-
 	commandLineParser.AddPositionalArgument(subCommandArgument);
-	commandLineParser.AddPositionalArgument(inputPathArg);
 
 	if(!commandLineParser.Parse(args))
 	{

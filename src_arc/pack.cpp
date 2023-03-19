@@ -20,7 +20,39 @@
 using namespace StdXX;
 using namespace StdXX::FileSystem;
 
+static void PackDir(const Path& relativeDirPath, const Path& inputBasePath, WritableFileSystem& writableFileSystem)
+{
+	Path dirPath = inputBasePath / relativeDirPath.String().SubString(1);
+	File dir(dirPath);
+
+	stdOut << endl << u8"Packing dir: " << relativeDirPath << endl;
+
+	for(const auto& childEntry : dir)
+	{
+		Path relativeChildPath = relativeDirPath / childEntry.name;
+		Path absoluteChildPath = inputBasePath / relativeChildPath.String().SubString(1);
+
+		if(childEntry.type == FileType::Directory)
+		{
+			writableFileSystem.CreateDirectory(relativeChildPath);
+			PackDir(relativeChildPath, inputBasePath, writableFileSystem);
+		}
+		else
+		{
+			stdOut << u8"Packing: " << relativeChildPath << endl;
+
+			FileInputStream inputStream(absoluteChildPath);
+			auto outputStream = writableFileSystem.CreateFile(relativeChildPath);
+
+			inputStream.FlushTo(*outputStream);
+		}
+	}
+}
+
 void Pack(const Path& inputPath, WritableFileSystem& writableFileSystem)
 {
-	NOT_IMPLEMENTED_ERROR; //TODO: implement me
+	PackDir({u8"/"}, inputPath, writableFileSystem);
+
+	stdOut << u8"Flushing filesystem to disk. This might take a while" << endl;
+	writableFileSystem.Flush();
 }

@@ -16,12 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <StdXX.hpp>
-using namespace StdXX;
-using namespace StdXX::FileSystem;
 //Local
 #include "BIS_PBO_ReadFileSystem.hpp"
 #include "PBO.hpp"
+#include "BIS_PBO_WriteFileSystem.hpp"
 
 class BIS_PBO_Format : public Format
 {
@@ -29,7 +27,7 @@ public:
 	//Methods
 	WritableFileSystem* CreateFileSystem(const Path &fileSystemPath, const OpenOptions& options) const override
 	{
-		return nullptr;
+		return new BIS_PBO_WriteFileSystem(new FileOutputStream(fileSystemPath));
 	}
 
 	String GetId() const override

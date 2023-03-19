@@ -3,8 +3,9 @@ set(SOURCE_FILES
 
 	#bis_pbo
 	${CMAKE_CURRENT_SOURCE_DIR}/bis_pbo/BIS_PBO_Decompressor.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/bis_pbo/BIS_PBO_ReadFileSystem.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/bis_pbo/BIS_PBO_Format.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/bis_pbo/BIS_PBO_ReadFileSystem.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/bis_pbo/BIS_PBO_WriteFileSystem.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/bis_pbo/PBO.hpp
 
 	#coh_sga
