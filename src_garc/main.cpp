@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 Amir Czwink (amir130@hotmail.de)
+ * Copyright (c) 2019-2023 Amir Czwink (amir130@hotmail.de)
  *
  * This file is part of ACFSLib.
  *
@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with ACFSLib.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Std++.hpp>
+#include <StdXX.hpp>
 using namespace StdXX;
+using namespace StdXX::FileSystem;
 using namespace StdXX::UI;
 
 struct BufferedFileSystemNode
@@ -27,7 +28,7 @@ struct BufferedFileSystemNode
 	mutable DynamicArray<UniquePointer<BufferedFileSystemNode>> children;
 	BufferedFileSystemNode* parent;
 	mutable uint64 size;
-	mutable FileSystemNodeType type;
+	mutable FileType type;
 
 	BufferedFileSystemNode(const Path& path) : path(path), childrenRead(false), parent(nullptr), size(0)
 	{
@@ -39,7 +40,7 @@ class ExampleController : public TreeController
 public:
 	ExampleController()
 	{
-		this->root = new BufferedFileSystemNode(String(u8"/home/amir/Schreibtisch/"));
+		this->root = new BufferedFileSystemNode(String(u8"/home/amir/Desktop/"));
 	}
 
 	//Methods
@@ -109,13 +110,11 @@ public:
 			{
 				switch(node->type)
 				{
-					case FileSystemNodeType::Directory:
+					case FileType::Directory:
 						return u8"Directory";
-						break;
-					case FileSystemNodeType::File:
+					case FileType::File:
 						return u8"File";
-						break;
-					case FileSystemNodeType::Link:
+					case FileType::Link:
 						return u8"Link";
 				}
 			}
@@ -134,24 +133,20 @@ private:
 			return;
 
 		node.childrenRead = true;
-		AutoPointer<const FileSystemNode> fsNode = OSFileSystem::GetInstance().GetNode(node.path);
-		node.type = fsNode->GetType();
 
-		if(fsNode->GetType() == FileSystemNodeType::File)
-		{
-			node.size = fsNode.Cast<const File>()->GetSize();
-		}
+		File file(node.path);
+		node.type = file.Type();
+
+		if(node.type == FileType ::File)
+			node.size = file.Info().size;
 		else
-		{
-			node.size = fsNode->QueryInfo().storedSize;
-		}
+			node.size = file.Info().storedSize;
 
-		if (fsNode->GetType() == FileSystemNodeType::Directory)
+		if (node.type == FileType::Directory)
 		{
-			AutoPointer<const Directory> dir = fsNode.Cast<const Directory>();
-			for (const auto& childName : *dir)
+			for (const auto& child : file)
 			{
-				BufferedFileSystemNode* childNode = new BufferedFileSystemNode(node.path / childName);
+				BufferedFileSystemNode* childNode = new BufferedFileSystemNode(node.path / child.name);
 				childNode->parent = (BufferedFileSystemNode*)&node;
 				node.children.Push(childNode);
 			}
@@ -161,7 +156,7 @@ private:
 
 int32 Main(const String &programName, const FixedArray<String> &args)
 {
-	StandardEventQueue eventQueue;
+	EventHandling::StandardEventQueue eventQueue;
 	MainAppWindow* wnd = new MainAppWindow(eventQueue);
 
 	TreeView* treeView = new TreeView;
