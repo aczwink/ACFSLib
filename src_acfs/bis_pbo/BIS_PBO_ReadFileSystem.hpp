@@ -65,7 +65,7 @@ private:
 			String filePath = textReader.ReadZeroTerminatedString();
 			headerEntry.entryType = static_cast<PboEntryType>(dataReader.ReadUInt32());
 			headerEntry.uncompressedSize = dataReader.ReadUInt32();
-			dataReader.Skip(4); //zero
+			dataReader.Skip(4); //offset, but often 0
 			headerEntry.timeStamp = dataReader.ReadUInt32();
 			headerEntry.blockSize = dataReader.ReadUInt32();
 

@@ -77,14 +77,11 @@ private:
 		pboEntry.filePath = textReader.ReadZeroTerminatedString();
 		uint32 entryType = dataReader.ReadUInt32();
 		pboEntry.uncompressedSize = dataReader.ReadUInt32();
-		uint32 zero = dataReader.ReadUInt32();
+		dataReader.ReadUInt32();
 		pboEntry.timeStamp = dataReader.ReadUInt32();
 		pboEntry.blockSize = dataReader.ReadUInt32();
 
 		//validate entry
-		if(zero != 0)
-			return false;
-
 		switch(entryType)
 		{
 			case (uint32)PboEntryType::Uncompressed:
