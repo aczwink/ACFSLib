@@ -1,5 +1,7 @@
 # ACFSLib
-A library that implements several file systems (mainly archives) that are rather uncommon
+A library that implements several file systems (mainly archives) that are rather uncommon (today only game archive files)
+
+[![Build Linux x86-64](https://github.com/aczwink/ACFSLib/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/aczwink/ACFSLib/actions/workflows/build-and-release.yml)
 
 ## Supported file systems
 * BIS PBO - The archive format of the .pbo files used in games by Bohemia Interactive such as ArmA: Cold War Assault (aka Operation Flashpoint)
