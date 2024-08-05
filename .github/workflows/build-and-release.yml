@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [ "master" ]
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 env:
   BUILD_TYPE: Debug
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     #build and install XP-CMake
@@ -66,27 +71,18 @@ jobs:
     # Create release
     - name: Pack release archive
       run: zip --junk-paths bin_linux_x86-64.zip acfslib/_build/ArC acfslib/_build/libacfs_d.a
-          
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: latest
-        release_name: Latest build
-        body: |
-          Latest build of master branch
-        draft: false
-        prerelease: false
 
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
+    - name: Create or update release
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./bin_linux_x86-64.zip
-        asset_name: bin_linux_x86-64.zip
-        asset_content_type: application/zip
+        GH_TOKEN: ${{ github.token }}
+        GHR_TITLE: Latest build
+        GHR_NOTES: Latest build of master branch
+        GHR_FILENAME: ../bin_linux_x86-64.zip
+      run: |
+        if gh release view latest; then
+          gh release edit latest --title "$GHR_TITLE" --notes "$GHR_NOTES"
+        else
+          gh release create latest --title "$GHR_TITLE" --notes "$GHR_NOTES"
+        fi
+        gh release upload latest "$GHR_FILENAME" --clobber
+      working-directory: acfslib
